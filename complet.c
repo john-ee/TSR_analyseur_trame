@@ -15,6 +15,9 @@
 #define UDP 0x0006
 #define TCP 0x0011
 
+//Ports de protocoles applicatifs
+#define SMTP 587
+
 void parse_udp(const u_char* packet){
 	int i;
 
@@ -43,6 +46,8 @@ void parse_tcp(const u_char* packet){
 
 	printf("\t\tPort Source      : %x\n",tcp_header->th_sport);
 	printf("\t\tPort Destination : %x\n",tcp_header->th_dport);
+
+
 }
 
 
