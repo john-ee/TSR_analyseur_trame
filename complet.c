@@ -12,11 +12,6 @@
 #include <netinet/in.h>
 #include "complet.h"
 
-#define UDP 0x0006
-#define TCP 0x0011
-
-//Ports de protocoles applicatifs
-#define SMTP 587
 
 void parse_udp(const u_char* packet){
 	int i;
