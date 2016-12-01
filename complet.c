@@ -10,10 +10,25 @@
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <netinet/in.h>
+#include <ctype.h>
 #include "complet.h"
 
 
-void parse_udp(const u_char* packet){
+void parse_smtp(const u_char* packet){
+	printf("\t\tSMTP\n");
+	int i = 0;
+	while (packet[i] == '\0'){
+		if(isprint(packet[i]))
+			printf("%c", packet[i]);
+		else
+			printf(".");
+		i++;
+	}
+	printf("\n");
+
+}
+
+void parse_udp_complet(const u_char* packet){
 	int i;
 
 	struct udphdr *udp_header = (struct udphdr *) packet;
@@ -21,32 +36,73 @@ void parse_udp(const u_char* packet){
 
 	printf("\tUDP\n");
 
-	printf("\t\tPort Source      : %x\n",udp_header->uh_sport);
-	printf("\t\tPort Destination : %x\n",udp_header->uh_dport);
+	switch(udp_header->uh_sport){
+		case FTPC: printf("\t\tFTP: Envoi de données\n"); break;
+		case FTPS: printf("\t\tFTP: Envoi de requêtes\n"); break;
+		case HTTP: printf("\t\tHTTP"); break;
+		case HTTPS: printf("\t\tHTTPS\n"); break;
+		case DNS: printf("\t\tDNS\n"); break;
+		case SMTP: parse_smtp(packet); break;
 
+		default: printf("\t\tPort Destination : %x\n",udp_header->uh_sport); break;
+	}
 
+	switch(udp_header->uh_dport){
+		case FTPC: printf("\t\tFTP: Envoi de données\n"); break;
+		case FTPS: printf("\t\tFTP: Envoi de requêtes\n"); break;
+		case HTTP: printf("\t\tHTTP"); break;
+		case HTTPS: printf("\t\tHTTPS\n"); break;
+		case DNS: printf("\t\tDNS\n"); break;
+		case SMTP: parse_smtp(packet); break;
+
+		default: printf("\t\tPort Destination : %x\n",udp_header->uh_dport); break;
+	}
 
 	for (i=0;i<size;i++)
 		packet++;
 }
 
 
-void parse_tcp(const u_char* packet){
+void parse_tcp_complet(const u_char* packet){
 	int i;
 
 	struct tcphdr *tcp_header = (struct tcphdr *) packet;
 	int size = sizeof(struct ip);
+	int offset = (int)tcp_header->th_off;
+	u_short source = tcp_header->th_sport;
+	u_short dest = tcp_header->th_dport;
+
+	packet = packet + offset*4;
 
 	printf("\tTCP\n");
 
-	printf("\t\tPort Source      : %x\n",tcp_header->th_sport);
-	printf("\t\tPort Destination : %x\n",tcp_header->th_dport);
+	printf("\t\tData Offset : %d\n",offset);
+	switch(source){
+		case FTPC: printf("\t\tFTP: Réception de données\n"); break;
+		case FTPS: printf("\t\tFTP: Réception de requêtes\n"); break;
+		case HTTP: printf("\t\tHTTP\n"); break;
+		case HTTPS: printf("\t\tHTTPS\n"); break;
+		case DNS: printf("\t\tDNS\n"); break;
+		case SMTP: parse_smtp(packet); break;
+
+		default: printf("\t\tPort Source      : %x\n",source); break;
+	}
 
 
+	switch(dest){
+		case FTPC: printf("\t\tFTP: Envoi de données\n"); break;
+		case FTPS: printf("\t\tFTP: Envoi de requêtes\n"); break;
+		case HTTP: printf("\t\tHTTP"); break;
+		case HTTPS: printf("\t\tHTTPS\n"); break;
+		case DNS: printf("\t\tDNS\n"); break;
+		case SMTP: parse_smtp(packet); break;
+
+		default: printf("\t\tPort Destination : %x\n",dest); break;
+	}
 }
 
 
-void parse_ip(const u_char* packet){
+void parse_ip_complet(const u_char* packet){
 	int i;
 
 	struct ip *ip_header = (struct ip *) packet;
@@ -72,11 +128,11 @@ void parse_ip(const u_char* packet){
 	switch (ip_header->ip_p){
 		case UDP:
 			//printf("\t\tProtocole UDP\n");
-			parse_udp(packet);
+			parse_udp_complet(packet);
 			break;
 		case TCP:
 			//printf("\t\tProtocole TCP\n");
-			parse_tcp(packet);
+			parse_tcp_complet(packet);
 			break;
 		default:
 			printf("\t\tNi TCP ni UDP\n");
@@ -116,7 +172,7 @@ void parse_eth(const u_char* packet){
 	if (ntohs(eptr->ether_type) == ETHERTYPE_IP){
 		//printf("\t\tPacket IP\n");
 
-		parse_ip(packet);
+		parse_ip_complet(packet);
 	}
 
 	else if (ntohs (eptr->ether_type) == ETHERTYPE_ARP)

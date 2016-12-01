@@ -12,10 +12,13 @@
 #define BOOTPS 0x0043 //server
 #define BOOTPC 0x0044 //client
 #define DHCP 0x0222
+#define FTPS 0x0015 //server
+#define FTPC 0x0016 //client
 
-void parse_udp(const u_char* packet);
-void parse_tcp(const u_char* packet);
-void parse_ip(const u_char* packet);
+void parse_smtp(const u_char* packet);
+void parse_udp_complet(const u_char* packet);
+void parse_tcp_complet(const u_char* packet);
+void parse_ip_complet(const u_char* packet);
 void parse_eth(const u_char* packet);
 void packet_reader_complet(u_char *useless,const struct pcap_pkthdr* pkthdr,const u_char* packet);
 

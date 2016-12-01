@@ -11,7 +11,68 @@
 #include <netinet/udp.h>
 #include "concis.h"
 
-void packet_ip(const u_char *packet){
+
+
+void parse_udp_concis(const u_char *packet){
+	struct udphdr *udp_header = (struct udphdr *) packet;
+
+	printf("UDP  ");
+
+	switch(udp_header->uh_sport){
+		case FTPC: printf("FTP:Client  "); break;
+		case FTPS: printf("FTP:Serveur  "); break;
+		case HTTP: printf("HTTP  "); break;
+		case HTTPS: printf("HTTPS  "); break;
+		case DNS: printf("DNS  "); break;
+		case SMTP: printf("SMTP  "); break;
+
+		default: printf("Port Source non reconnu  "); break;
+	}
+
+	switch(udp_header->uh_dport){
+		case FTPC: printf("FTP:Client  "); break;
+		case FTPS: printf("FTP:Serveur  "); break;
+		case HTTP: printf("HTTP  "); break;
+		case HTTPS: printf("HTTPS  "); break;
+		case DNS: printf("DNS  "); break;
+		case SMTP: printf("SMTP  "); break;
+
+		default: printf("Port Destination non reconnu  "); break;
+	}
+}
+
+void parse_tcp_concis(const u_char *packet){
+		struct tcphdr *tcp_header = (struct tcphdr *) packet;
+	int size = sizeof(struct ip);
+	int offset = (int)tcp_header->th_off;
+
+	printf("TCP  ");
+
+	switch(tcp_header->th_sport){
+		case FTPC: printf("FTP:Client  "); break;
+		case FTPS: printf("FTP:Serveur  "); break;
+		case HTTP: printf("HTTP  "); break;
+		case HTTPS: printf("HTTPS  "); break;
+		case DNS: printf("DNS  "); break;
+		case SMTP: printf("SMTP  "); break;
+
+		default: printf("Port Source non reconnu  "); break;
+	}
+
+	switch(tcp_header->th_dport){
+		case FTPC: printf("FTP:Client  "); break;
+		case FTPS: printf("FTP:Serveur  "); break;
+		case HTTP: printf("HTTP  "); break;
+		case HTTPS: printf("HTTPS  "); break;
+		case DNS: printf("DNS  "); break;
+		case SMTP: printf("SMTP  "); break;
+
+		default: printf("Port Destination non reconnu  "); break;
+	}
+}
+
+
+void parse_ip(const u_char *packet){
 	int i;
 
 	struct ip *ip_header = (struct ip *) packet;
@@ -30,10 +91,10 @@ void packet_ip(const u_char *packet){
 
 	switch (ip_header->ip_p){
 		case UDP:
-			printf("UDP  ");
+			parse_udp_concis(packet);
 			break;
 		case TCP:
-			printf("TCP  ");
+			parse_tcp_concis(packet);
 			break;
 		default:
 			printf("ni TCP ni UDP  ");
@@ -74,7 +135,7 @@ void packet_reader_concis(u_char *useless,const struct pcap_pkthdr* pkthdr,const
 	switch(ntohs(eptr->ether_type)){
 		case ETHERTYPE_IP:
 			//printf("IP  ");
-			packet_ip(packet);
+			parse_ip(packet);
 			break;
 		case ETHERTYPE_ARP:
 			printf("ARP  ");
