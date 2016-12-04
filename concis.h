@@ -1,8 +1,8 @@
 #ifndef _CONCIS_H
 #define __CONCIS_H
 
-#define UDP 0x0006
-#define TCP 0x0011
+#define UDP 0x0011
+#define TCP 0x0006
 
 //Ports de protocoles applicatifs
 #define SMTP 0x024b

@@ -18,6 +18,8 @@ void parse_udp_concis(const u_char *packet){
 
 	printf("UDP  ");
 
+	int port = 0;
+
 	switch(udp_header->uh_sport){
 		case FTPC: printf("FTP:Client  "); break;
 		case FTPS: printf("FTP:Serveur  "); break;
@@ -26,7 +28,7 @@ void parse_udp_concis(const u_char *packet){
 		case DNS: printf("DNS  "); break;
 		case SMTP: printf("SMTP  "); break;
 
-		default: printf("Port Source non reconnu  "); break;
+		default: port++; break;
 	}
 
 	switch(udp_header->uh_dport){
@@ -37,14 +39,18 @@ void parse_udp_concis(const u_char *packet){
 		case DNS: printf("DNS  "); break;
 		case SMTP: printf("SMTP  "); break;
 
-		default: printf("Port Destination non reconnu  "); break;
+		default: port++; break;
 	}
+
+	if (port==2)
+		printf("Protocole Applicatif non reconnu  ");
 }
 
 void parse_tcp_concis(const u_char *packet){
-		struct tcphdr *tcp_header = (struct tcphdr *) packet;
+	struct tcphdr *tcp_header = (struct tcphdr *) packet;
 	int size = sizeof(struct ip);
 	int offset = (int)tcp_header->th_off;
+	int port = 0;
 
 	printf("TCP  ");
 
@@ -56,7 +62,7 @@ void parse_tcp_concis(const u_char *packet){
 		case DNS: printf("DNS  "); break;
 		case SMTP: printf("SMTP  "); break;
 
-		default: printf("Port Source non reconnu  "); break;
+		default: port++; break;
 	}
 
 	switch(tcp_header->th_dport){
@@ -67,8 +73,11 @@ void parse_tcp_concis(const u_char *packet){
 		case DNS: printf("DNS  "); break;
 		case SMTP: printf("SMTP  "); break;
 
-		default: printf("Port Destination non reconnu  "); break;
+		default: port++; break;
 	}
+
+	if (port==2)
+		printf("Protocole Applicatif non reconnu  ");
 }
 
 

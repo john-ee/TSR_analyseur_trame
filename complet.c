@@ -13,11 +13,15 @@
 #include <ctype.h>
 #include "complet.h"
 
+void parse_http(const u_char* packet){
+	;
+}
+
 
 void parse_smtp(const u_char* packet){
 	printf("\t\tSMTP\n");
 	int i = 0;
-	while (packet[i] == '\0'){
+	while (packet[i] != '\0'){
 		if(isprint(packet[i]))
 			printf("%c", packet[i]);
 		else
@@ -72,9 +76,22 @@ void parse_tcp_complet(const u_char* packet){
 	u_short source = tcp_header->th_sport;
 	u_short dest = tcp_header->th_dport;
 
-	packet = packet + offset*4;
-
 	printf("\tTCP\n");
+
+	if (tcp_header->th_flags & TH_FIN)
+		printf("\t\tFlag : FIN\n");
+	if (tcp_header->th_flags & TH_SYN)
+		printf("\t\tFlag : SYN\n");
+	if (tcp_header->th_flags & TH_RST)
+		printf("\t\tFlag : RST\n");
+	if (tcp_header->th_flags & TH_PUSH)
+		printf("\t\tFlag : PUSH\n");
+	if (tcp_header->th_flags & TH_ACK)
+		printf("\t\tFlag : ACK\n");
+	if (tcp_header->th_flags & TH_URG)
+		printf("\t\tFlag : URG\n");
+
+	packet = packet + offset*4;
 
 	printf("\t\tData Offset : %d\n",offset);
 	switch(source){
