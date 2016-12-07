@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <pcap.h>
 #include <errno.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>

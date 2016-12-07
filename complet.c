@@ -2,14 +2,11 @@
 #include <stdlib.h>
 #include <pcap.h>
 #include <errno.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
-#include <netinet/in.h>
 #include <ctype.h>
 #include "complet.h"
 #include "bootp.h"
@@ -18,7 +15,7 @@
 void print_ascii(const u_char* packet)
 {
 	printf("\tASCII");
-	int i = 0;
+	int i = 0, dhcp = 0;
 	while (packet[i] != '\0'){
 		if (i%47==0)
 			printf("\n\t\t");
@@ -43,6 +40,7 @@ void parse_smtp(const u_char* packet){
 void parse_bootp(const u_char* packet){
 	printf("\tBOOTP\n");
 	struct bootp *bootp_header = (struct bootp *) packet;
+	int i = 0, dhcp = 0;
 
 	switch (bootp_header->bp_op){
 		case BOOTREPLY : printf("\t\tBOOTREPLY\n"); break;
@@ -51,7 +49,14 @@ void parse_bootp(const u_char* packet){
 	}
 
 	u_char *vendor = bootp_header->bp_vend;
+	unsigned char magic_cookie[] = VM_RFC1048;
 	
+	for (i=0;i<4;i++){
+		if (vendor[i] == magic_cookie[i])
+			dhcp++;
+	}
+	if (dhcp == 4)
+		printf("\t\tExtensions présentes\n");
 }
 
 void parse_udp_complet(const u_char* packet){
@@ -59,8 +64,8 @@ void parse_udp_complet(const u_char* packet){
 
 	struct udphdr *udp_header = (struct udphdr *) packet;
 	int size = sizeof(struct udphdr);
-	u_short source = udp_header->uh_sport;
-	u_short dest = udp_header->uh_dport;
+	int source = udp_header->uh_sport;
+	int dest = udp_header->uh_dport;
 
 	printf("\tUDP\n");
 
@@ -105,8 +110,8 @@ void parse_tcp_complet(const u_char* packet){
 	struct tcphdr *tcp_header = (struct tcphdr *) packet;
 	int size = sizeof(struct ip);
 	int offset = (int)tcp_header->th_off;
-	u_short source = tcp_header->th_sport;
-	u_short dest = tcp_header->th_dport;
+	int source = tcp_header->th_sport;
+	int dest = tcp_header->th_dport;
 
 	printf("\tTCP\n");
 

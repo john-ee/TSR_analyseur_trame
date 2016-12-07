@@ -1,14 +1,14 @@
-#define UDP 0x0011
-#define TCP 0x0006
+#define UDP 17
+#define TCP 6
 
 //Ports de protocoles applicatifs
-#define SMTPS 0x024b
-#define SMTP 0x19
-#define HTTP 0x0050
-#define HTTPS 0x01bb
-#define DNS 0x0035
-#define BOOTPS 0x0043 //server
-#define BOOTPC 0x0044 //client
-#define DHCP 0x0222
-#define FTPS 0x0015 //server
-#define FTPC 0x0016 //client
+#define SMTPS 587
+#define SMTP 25
+#define HTTP 80
+#define HTTPS 443
+#define DNS 53
+#define BOOTPS 67 //server
+#define BOOTPC 68 //client
+#define DHCP 546
+#define FTPS 21 //server
+#define FTPC 22 //client
