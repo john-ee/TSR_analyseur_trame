@@ -1,6 +1,6 @@
 APPLI=main
 CSRC= main.c complet.c concis.c
-CC = gcc
+CC = gcc -g
 
 COBJ=$(CSRC:.c=.o)
 

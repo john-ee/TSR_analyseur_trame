@@ -1,5 +1,5 @@
-#define UDP 17
-#define TCP 6
+#define UDP 0x0011
+#define TCP 0x0006
 
 //Ports de protocoles applicatifs
 #define SMTPS 587

@@ -13,12 +13,14 @@
 
 void parse_udp_concis(const u_char *packet){
 	struct udphdr *udp_header = (struct udphdr *) packet;
+	short source = ntohs(udp_header->uh_sport);
+	short dest = ntohs(udp_header->uh_dport);
 
 	printf("UDP  ");
 
 	int port = 0;
 
-	switch(udp_header->uh_sport){
+	switch(source){
 		case FTPC: printf("FTP:Client  "); break;
 		case FTPS: printf("FTP:Serveur  "); break;
 		case HTTP: printf("HTTP  "); break;
@@ -29,7 +31,7 @@ void parse_udp_concis(const u_char *packet){
 		default: port++; break;
 	}
 
-	switch(udp_header->uh_dport){
+	switch(dest){
 		case FTPC: printf("FTP:Client  "); break;
 		case FTPS: printf("FTP:Serveur  "); break;
 		case HTTP: printf("HTTP  "); break;
@@ -48,11 +50,14 @@ void parse_tcp_concis(const u_char *packet){
 	struct tcphdr *tcp_header = (struct tcphdr *) packet;
 	int size = sizeof(struct ip);
 	int offset = (int)tcp_header->th_off;
+	short source = ntohs(tcp_header->th_sport);
+	short dest = ntohs(tcp_header->th_dport);
 	int port = 0;
+
 
 	printf("TCP  ");
 
-	switch(tcp_header->th_sport){
+	switch(source){
 		case FTPC: printf("FTP:Client  "); break;
 		case FTPS: printf("FTP:Serveur  "); break;
 		case HTTP: printf("HTTP  "); break;
@@ -63,7 +68,7 @@ void parse_tcp_concis(const u_char *packet){
 		default: port++; break;
 	}
 
-	switch(tcp_header->th_dport){
+	switch(dest){
 		case FTPC: printf("FTP:Client  "); break;
 		case FTPS: printf("FTP:Serveur  "); break;
 		case HTTP: printf("HTTP  "); break;
