@@ -12,16 +12,16 @@
 #include <netinet/in.h>
 #include <ctype.h>
 #include "complet.h"
+#include "bootp.h"
+#include "port.h"
 
-void parse_http(const u_char* packet){
-	;
-}
-
-
-void parse_smtp(const u_char* packet){
-	printf("\t\tSMTP\n");
+void print_ascii(const u_char* packet)
+{
+	printf("\tASCII");
 	int i = 0;
 	while (packet[i] != '\0'){
+		if (i%47==0)
+			printf("\n\t\t");
 		if(isprint(packet[i]))
 			printf("%c", packet[i]);
 		else
@@ -29,7 +29,29 @@ void parse_smtp(const u_char* packet){
 		i++;
 	}
 	printf("\n");
+}
 
+void parse_http(const u_char* packet){
+	;
+}
+
+
+void parse_smtp(const u_char* packet){
+	printf("\tSMTP\n");
+}
+
+void parse_bootp(const u_char* packet){
+	printf("\tBOOTP\n");
+	struct bootp *bootp_header = (struct bootp *) packet;
+
+	switch (bootp_header->bp_op){
+		case BOOTREPLY : printf("\t\tBOOTREPLY\n"); break;
+		case BOOTREQUEST : printf("\t\tBOOTREQUEST\n"); break;
+		default : break;
+	}
+
+	u_char *vendor = bootp_header->bp_vend;
+	
 }
 
 void parse_udp_complet(const u_char* packet){
@@ -37,33 +59,43 @@ void parse_udp_complet(const u_char* packet){
 
 	struct udphdr *udp_header = (struct udphdr *) packet;
 	int size = sizeof(struct udphdr);
+	u_short source = udp_header->uh_sport;
+	u_short dest = udp_header->uh_dport;
 
 	printf("\tUDP\n");
 
-	switch(udp_header->uh_sport){
-		case FTPC: printf("\t\tFTP: Envoi de données\n"); break;
-		case FTPS: printf("\t\tFTP: Envoi de requêtes\n"); break;
-		case HTTP: printf("\t\tHTTP"); break;
-		case HTTPS: printf("\t\tHTTPS\n"); break;
-		case DNS: printf("\t\tDNS\n"); break;
-		case SMTP: parse_smtp(packet); break;
-
-		default: printf("\t\tPort Destination : %x\n",udp_header->uh_sport); break;
-	}
-
-	switch(udp_header->uh_dport){
-		case FTPC: printf("\t\tFTP: Envoi de données\n"); break;
-		case FTPS: printf("\t\tFTP: Envoi de requêtes\n"); break;
-		case HTTP: printf("\t\tHTTP"); break;
-		case HTTPS: printf("\t\tHTTPS\n"); break;
-		case DNS: printf("\t\tDNS\n"); break;
-		case SMTP: parse_smtp(packet); break;
-
-		default: printf("\t\tPort Destination : %x\n",udp_header->uh_dport); break;
-	}
-
 	for (i=0;i<size;i++)
 		packet++;
+
+	switch(source){
+		case FTPC: printf("\t\tFTP: Envoi de données\n"); break;
+		case FTPS: printf("\t\tFTP: Envoi de requêtes\n"); break;
+		case HTTP:
+		case HTTPS: printf("\t\tHTTP\n"); break;
+		case DNS: printf("\t\tDNS\n"); break;
+		case SMTP:
+		case SMTPS: parse_smtp(packet); break;
+		case BOOTPS:
+		case BOOTPC: parse_bootp(packet); break;
+
+		default: printf("\t\tPort Destination : %x\n",source); break;
+	}
+
+	switch(dest){
+		case FTPC: printf("\t\tFTP: Envoi de données\n"); break;
+		case FTPS: printf("\t\tFTP: Envoi de requêtes\n"); break;
+		case HTTP:
+		case HTTPS: printf("\t\tHTTP\n"); break;
+		case DNS: printf("\t\tDNS\n"); break;
+		case SMTP:
+		case SMTPS: parse_smtp(packet); break;
+		case BOOTPS:
+		case BOOTPC: parse_bootp(packet); break;
+
+		default: printf("\t\tPort Destination : %x\n",dest); break;
+	}
+
+	print_ascii(packet);
 }
 
 
@@ -91,16 +123,20 @@ void parse_tcp_complet(const u_char* packet){
 	if (tcp_header->th_flags & TH_URG)
 		printf("\t\tFlag : URG\n");
 
-	packet = packet + offset*4;
+	for (i=0;i<offset;i++)
+		packet++;
 
 	printf("\t\tData Offset : %d\n",offset);
 	switch(source){
-		case FTPC: printf("\t\tFTP: Réception de données\n"); break;
-		case FTPS: printf("\t\tFTP: Réception de requêtes\n"); break;
-		case HTTP: printf("\t\tHTTP\n"); break;
-		case HTTPS: printf("\t\tHTTPS\n"); break;
+		case FTPC: printf("\t\tFTP: Envoi de données\n"); break;
+		case FTPS: printf("\t\tFTP: Envoi de requêtes\n"); break;
+		case HTTP:
+		case HTTPS: printf("\t\tHTTP\n"); break;
 		case DNS: printf("\t\tDNS\n"); break;
-		case SMTP: parse_smtp(packet); break;
+		case SMTP:
+		case SMTPS: parse_smtp(packet); break;
+		case BOOTPS:
+		case BOOTPC: parse_bootp(packet); break;
 
 		default: printf("\t\tPort Source      : %x\n",source); break;
 	}
@@ -109,13 +145,18 @@ void parse_tcp_complet(const u_char* packet){
 	switch(dest){
 		case FTPC: printf("\t\tFTP: Envoi de données\n"); break;
 		case FTPS: printf("\t\tFTP: Envoi de requêtes\n"); break;
-		case HTTP: printf("\t\tHTTP"); break;
-		case HTTPS: printf("\t\tHTTPS\n"); break;
+		case HTTP:
+		case HTTPS: printf("\t\tHTTP\n"); break;
 		case DNS: printf("\t\tDNS\n"); break;
-		case SMTP: parse_smtp(packet); break;
+		case SMTP:
+		case SMTPS: parse_smtp(packet); break;
+		case BOOTPS:
+		case BOOTPC: parse_bootp(packet); break;
 
 		default: printf("\t\tPort Destination : %x\n",dest); break;
 	}
+
+	print_ascii(packet);
 }
 
 
@@ -128,10 +169,6 @@ void parse_ip_complet(const u_char* packet){
 	printf("\tIP\n");
 	
 	printf("\t\tIPv%x\n",ip_header->ip_v);
-	//printf("\t\tTaille de l'en-tête %x\n",ip_header->ip_hl);
-	//printf("\t\tType de service %x\n",ip_header->ip_tos);
-
-	//printf("\t\tData offset %d\n",ip_header->ip_off);
 
 	for (i=0;i<size;i++)
 		packet++;
@@ -144,11 +181,9 @@ void parse_ip_complet(const u_char* packet){
 
 	switch (ip_header->ip_p){
 		case UDP:
-			//printf("\t\tProtocole UDP\n");
 			parse_udp_complet(packet);
 			break;
 		case TCP:
-			//printf("\t\tProtocole TCP\n");
 			parse_tcp_complet(packet);
 			break;
 		default:
