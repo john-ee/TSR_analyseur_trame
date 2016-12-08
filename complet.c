@@ -10,11 +10,11 @@
 #include <ctype.h>
 #include "complet.h"
 #include "bootp.h"
+#include "telnet.h"
 #include "port.h"
 
 void print_ascii(const u_char* packet, int length)
 {
-	//printf("\tASCII");
 	int i = 0, dhcp = 0;
 	while (i<length){
 		if (i%47==0)
@@ -28,11 +28,35 @@ void print_ascii(const u_char* packet, int length)
 	printf("\n");
 }
 
-void parse_http(const u_char* packet){
-	;
+
+void parse_telnet_complet(const u_char* packet, int length)
+{
+	int i;
+	printf("\tTELNET");
+	while (i<length)
+	{
+		if (i%47==0)
+			printf("\n\t\t");
+
+		switch(packet[i])
+		{
+			case TCWILL : printf("will "); break;
+
+			case TOECHO : printf("echo "); break;
+
+			case TOLINEMODE : printf("line mode "); break;
+
+			case TOTERMTYPE : printf("terminal type "); break;
+
+			default : break;
+		}
+		i++;
+	}
 }
 
-void parse_bootp(const u_char* packet){
+
+void parse_bootp(const u_char* packet)
+{
 	printf("\tBOOTP\n");
 	struct bootp *bootp_header = (struct bootp *) packet;
 	int i = 0, j, dhcp = 0;
@@ -145,8 +169,8 @@ void parse_bootp(const u_char* packet){
 
 }
 
-void parse_port_complet(const u_char* packet, int length, short source, short dest){
-
+void parse_port_complet(const u_char* packet, int length, short source, short dest)
+{
 	printf("\t\tPort Source : %x\n",source);
 	printf("\t\tPort Source : %x\n",dest);
 	int not_parsed = 0;
@@ -174,6 +198,8 @@ void parse_port_complet(const u_char* packet, int length, short source, short de
 
 		case BOOTPS:
 		case BOOTPC: parse_bootp(packet); break;
+
+		case TELNET: parse_telnet_complet(packet, length); break; 
 
 		default: not_parsed++; break;
 
@@ -209,6 +235,8 @@ void parse_port_complet(const u_char* packet, int length, short source, short de
 			case BOOTPC: parse_bootp(packet);
 						 break;
 
+			case TELNET: parse_telnet_complet(packet, length); break; 
+
 			default: printf("\t\tPort Applicatif non reconnu\n");
 					 print_ascii(packet, length);
 					 break;
@@ -216,7 +244,8 @@ void parse_port_complet(const u_char* packet, int length, short source, short de
 	}
 }
 
-void parse_udp_complet(const u_char* packet, int length){
+void parse_udp_complet(const u_char* packet, int length)
+{
 	int i;
 
 	struct udphdr *udp_header = (struct udphdr *) packet;
@@ -234,7 +263,8 @@ void parse_udp_complet(const u_char* packet, int length){
 }
 
 
-void parse_tcp_complet(const u_char* packet, int length){
+void parse_tcp_complet(const u_char* packet, int length)
+{
 	int i;
 
 	struct tcphdr *tcp_header = (struct tcphdr *) packet;
@@ -301,7 +331,9 @@ void parse_ip_complet(const u_char* packet, int length){
 }
 
 
-void parse_eth(const u_char* packet, int length){
+
+void parse_eth(const u_char* packet, int length)
+{
 	u_char *ptr;
 
     int i;

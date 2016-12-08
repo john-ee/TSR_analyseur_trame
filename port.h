@@ -2,6 +2,7 @@
 #define TCP 0x0006
 
 //Ports de protocoles applicatifs
+#define TELNET 23
 #define SMTPS 587
 #define SMTP 25
 #define HTTP 80
