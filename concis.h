@@ -1,3 +1,4 @@
+void parse_port_concis(short source, short dest);
 void parse_udp_concis(const u_char *packet);
 void parse_tcp_concis(const u_char *packet);
 void parse_ip_concis(const u_char *packet);

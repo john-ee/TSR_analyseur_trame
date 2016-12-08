@@ -11,14 +11,8 @@
 #include "port.h"
 
 
-void parse_udp_concis(const u_char *packet){
-	struct udphdr *udp_header = (struct udphdr *) packet;
-	short source = ntohs(udp_header->uh_sport);
-	short dest = ntohs(udp_header->uh_dport);
-
-	printf("UDP  ");
-
-	int port = 0;
+void parse_port_concis(short source, short dest){
+		int port = 0;
 
 	switch(source){
 		case FTPC: printf("FTP:Client  "); break;
@@ -43,7 +37,18 @@ void parse_udp_concis(const u_char *packet){
 	}
 
 	if (port==2)
-		printf("Protocole Applicatif non reconnu  ");
+		printf("Port Applicatif non reconnu  ");
+}
+
+
+void parse_udp_concis(const u_char *packet){
+	struct udphdr *udp_header = (struct udphdr *) packet;
+	short source = ntohs(udp_header->uh_sport);
+	short dest = ntohs(udp_header->uh_dport);
+
+	printf("UDP  ");
+
+	parse_port_concis(source, dest);
 }
 
 void parse_tcp_concis(const u_char *packet){
@@ -54,33 +59,24 @@ void parse_tcp_concis(const u_char *packet){
 	short dest = ntohs(tcp_header->th_dport);
 	int port = 0;
 
+	printf("TCP {");
 
-	printf("TCP  ");
+	if (tcp_header->th_flags & TH_FIN)
+		printf(" FIN");
+	if (tcp_header->th_flags & TH_SYN)
+		printf(" SYN");
+	if (tcp_header->th_flags & TH_RST)
+		printf(" RST");
+	if (tcp_header->th_flags & TH_PUSH)
+		printf(" PUSH");
+	if (tcp_header->th_flags & TH_ACK)
+		printf(" ACK");
+	if (tcp_header->th_flags & TH_URG)
+		printf(" URG");
 
-	switch(source){
-		case FTPC: printf("FTP:Client  "); break;
-		case FTPS: printf("FTP:Serveur  "); break;
-		case HTTP: printf("HTTP  "); break;
-		case HTTPS: printf("HTTPS  "); break;
-		case DNS: printf("DNS  "); break;
-		case SMTP: printf("SMTP  "); break;
+	printf(" }  ");
 
-		default: port++; break;
-	}
-
-	switch(dest){
-		case FTPC: printf("FTP:Client  "); break;
-		case FTPS: printf("FTP:Serveur  "); break;
-		case HTTP: printf("HTTP  "); break;
-		case HTTPS: printf("HTTPS  "); break;
-		case DNS: printf("DNS  "); break;
-		case SMTP: printf("SMTP  "); break;
-
-		default: port++; break;
-	}
-
-	if (port==2)
-		printf("Protocole Applicatif non reconnu  ");
+	parse_port_concis(source, dest);
 }
 
 

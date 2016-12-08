@@ -8,6 +8,7 @@
 #include <getopt.h>
 #include "complet.h"
 #include "concis.h"
+#include "synthetique.h"
 
 
 int main(int argc, char *argv[])
@@ -55,17 +56,18 @@ int main(int argc, char *argv[])
 	if (file != NULL)
 	{
 		handle = pcap_open_offline(file, errbuf);
-		printf("Appuyer sur Entrée pour lire trame par trame\n");
-		printf("Appuyer sur Espace 2 fois puis Entrée pour annalyser toutes les trames\n\n");
 
 		while ((packet=pcap_next(handle, &header)) != NULL)
 		{
 			switch (verb){
+				case 2: packet_reader_synthetique(NULL, &header, packet); break;
 				case 3: packet_reader_complet(NULL, &header, packet); break;
 				default : packet_reader_concis(NULL, &header, packet); break;
 			}
 
 			if (pause != ' '){
+				printf("\nAppuyer sur Entrée pour lire trame par trame\n");
+				printf("Appuyer sur Espace 2 fois puis Entrée pour annalyser toutes les trames\n");
 				while ((pause=getchar()) != '\n' && (pause=getchar()) != ' '){
 					;
 				}
@@ -122,8 +124,9 @@ int main(int argc, char *argv[])
 		}
 
 		switch (verb){
-				case 3 : pcap_loop(handle,-1,packet_reader_complet,NULL); break;
-				default: pcap_loop(handle,-1,packet_reader_concis,NULL); break;
+			case 2 : pcap_loop(handle,-1,packet_reader_synthetique,NULL); break;
+			case 3 : pcap_loop(handle,-1,packet_reader_complet,NULL); break;
+			default: pcap_loop(handle,-1,packet_reader_concis,NULL); break;
 		}
 		/* And close the session */
 		pcap_close(handle);
