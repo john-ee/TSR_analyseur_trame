@@ -14,6 +14,59 @@
 #include "port.h"
 
 
+void parse_smtp_synthetique(const u_char* packet, int length)
+{
+	printf("\tSMTP ");
+
+	u_char mail[] = MAIL;
+	u_char rcpt[] = RCPT;
+	u_char data[] = DATA;
+	u_char ehlo[] = EHLO;
+	u_char auth[] = AUTH;
+
+	u_char message[4];
+
+	int i = 0, j = 0;
+	int mailcmp = 0, rcptcmp = 0, datacmp = 0;
+	int ehlocmp = 0, authcmp = 0;
+
+	while (i<length-4)
+	{
+		mailcmp = 0;
+		rcptcmp = 0;
+		datacmp = 0;
+		for (j=0;j<4;j++)
+			message[j] = packet[i+j];
+
+		for (j=0;j<4;j++)
+		{
+			if (mail[j] == message[j])
+				mailcmp++;
+			else if (rcpt[j] == message[j])
+				rcptcmp++;
+			else if (data[j] == message[j])
+				datacmp++;
+		}
+		if (mailcmp == 4 || rcptcmp == 4)
+		{
+			while (i<length){
+				if(isprint(packet[i]))
+					printf("%c", packet[i]);
+				else
+					printf(".");
+				i++;
+			}
+		}
+
+		else if (datacmp == 4)
+			printf("DATA");
+
+		i++;
+	}
+	printf("\n");
+}
+
+
 void parse_http_synthetique(const u_char* packet, int length)
 {
 	u_char get[] = GET;
@@ -100,28 +153,35 @@ void parse_port_synthetique(const u_char* packet, int length, short source, shor
 	printf("\t%x -> %x\n",source, dest);
 
 	switch(source){
-		case FTPC:  printf("\t\tFTP: Envoi de données\n");
-					break;
+		case FTPC:
+			printf("\t\tFTP: Envoi de données\n");
+			break;
 
-		case FTPS:  printf("\t\tFTP: Envoi de requêtes\n");
-					break;
+		case FTPS: 
+			printf("\t\tFTP: Envoi de requêtes\n");
+			break;
 		case HTTP:
-		case HTTPS: printf("\tHTTP\n");
-					break;
+		case HTTPS:
+			printf("\tHTTP\n");
+			break;
 
-		case DNS: printf("\tDNS\n");
-				  break;
+		case DNS:
+			printf("\tDNS\n");
+			break;
 
 		case SMTP:
-		case SMTPS: printf("\tSMTP\n");
-					break;
+		case SMTPS:
+			parse_smtp_synthetique(packet, length);
+			break;
 
 		case BOOTPS:
 		case BOOTPC:
-					 parse_bootp_synthetique(packet);
-					 break;
+			parse_bootp_synthetique(packet);
+			break;
 
-		case TELNET: printf("\tTELNET\n"); break; 
+		case TELNET:
+			printf("\tTELNET\n");
+			break; 
 
 		default: not_parsed++; break;
 
@@ -131,28 +191,35 @@ void parse_port_synthetique(const u_char* packet, int length, short source, shor
 	{
 		switch(dest)
 		{
-			case FTPC:  printf("\tFTP: Envoi de données\n");
-						break;
+			case FTPC:
+			printf("\t\tFTP: Envoi de données\n");
+			break;
 
-			case FTPS:  printf("\tFTP: Envoi de requêtes\n");
-						break;
-			case HTTP:
-			case HTTPS: printf("\tHTTP\n");
-						parse_http_synthetique(packet, length);
-						break;
+		case FTPS: 
+			printf("\t\tFTP: Envoi de requêtes\n");
+			break;
+		case HTTP:
+		case HTTPS:
+			printf("\tHTTP\n");
+			break;
 
-			case DNS: printf("\tDNS\n");
-					  break;
+		case DNS:
+			printf("\tDNS\n");
+			break;
 
-			case SMTP:
-			case SMTPS: printf("\tSMTP\n");
-						break;
+		case SMTP:
+		case SMTPS:
+			parse_smtp_synthetique(packet, length);
+			break;
 
-			case BOOTPS:
-			case BOOTPC: printf("\tBOOTP\n"); break;
+		case BOOTPS:
+		case BOOTPC:
+			parse_bootp_synthetique(packet);
+			break;
 
-			case TELNET: printf("\tTELNET\n"); break;
-
+		case TELNET:
+			printf("\tTELNET\n");
+			break; 
 			default: printf("\tPort Applicatif non reconnu\n");
 					 break;
 		}

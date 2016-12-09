@@ -21,10 +21,8 @@
 //OPTIONS, PUT, DELETE, TRACE
 
 // SMTP
-// MAIL RCPT DATA EHLO ESMTP AUTH
-#define MAIL { 4D, 41, 49, 4C }
-#define RCPT { 52, 43, 50, 54 }
-#define DATA { 44, 41, 54, 41 }
-#define EHLO { 45, 48, 4C, 4F }
-#define ESMTP { 45, 53, 4D, 50, 54 }
-#define AUTH { 41, 55, 54, 48 }
+#define MAIL { 77, 65, 73, 76 }
+#define RCPT { 82, 67, 80, 84 }
+#define DATA { 68, 65, 84, 65 }
+#define EHLO { 69, 72, 76, 79 }
+#define AUTH { 65, 85, 84, 72 }
