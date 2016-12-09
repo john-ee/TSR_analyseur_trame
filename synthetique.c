@@ -14,6 +14,48 @@
 #include "port.h"
 
 
+void parse_http_synthetique(const u_char* packet, int length)
+{
+	u_char get[] = GET;
+	u_char head[] = HEAD;
+	u_char post[] = POST;
+
+	u_char message[4];
+
+	int i = 0, j = 0;
+	int getcmp = 0, headcmp = 0, postcmp = 0;
+
+	while (i<length-4)
+	{
+		getcmp = 0;
+		headcmp = 0;
+		postcmp = 0;
+		for (j=0;j<4;j++)
+			message[j] = packet[i+j];
+
+		for (j=0;j<3;j++)
+		{
+			if (get[j] == message[j])
+				getcmp++;
+			else if (head[j] == message[j])
+				headcmp++;
+			else if (post[j] == message[j])
+				postcmp++;
+		}
+		if (getcmp == 3)
+			printf("\tGET\n");
+
+		else if (head[j] == message[j] && headcmp == 4)
+			printf("\tHEAD\n");
+
+		else if (post[j] == message[j] && postcmp == 4)
+			printf("\tPOST\n");
+
+		i++;
+	}
+}
+
+
 void parse_bootp_synthetique(const u_char* packet){
 	struct bootp *bootp_header = (struct bootp *) packet;
 	int i = 0, j, dhcp = 0;
@@ -79,6 +121,8 @@ void parse_port_synthetique(const u_char* packet, int length, short source, shor
 					 parse_bootp_synthetique(packet);
 					 break;
 
+		case TELNET: printf("\tTELNET\n"); break; 
+
 		default: not_parsed++; break;
 
 		}
@@ -94,6 +138,7 @@ void parse_port_synthetique(const u_char* packet, int length, short source, shor
 						break;
 			case HTTP:
 			case HTTPS: printf("\tHTTP\n");
+						parse_http_synthetique(packet, length);
 						break;
 
 			case DNS: printf("\tDNS\n");
@@ -105,6 +150,8 @@ void parse_port_synthetique(const u_char* packet, int length, short source, shor
 
 			case BOOTPS:
 			case BOOTPC: printf("\tBOOTP\n"); break;
+
+			case TELNET: printf("\tTELNET\n"); break;
 
 			default: printf("\tPort Applicatif non reconnu\n");
 					 break;

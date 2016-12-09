@@ -21,6 +21,7 @@ void parse_port_concis(short source, short dest){
 		case HTTPS: printf("HTTPS  "); break;
 		case DNS: printf("DNS  "); break;
 		case SMTP: printf("SMTP  "); break;
+		case TELNET: printf("TELNET  "); break;
 
 		default: port++; break;
 	}
@@ -32,6 +33,7 @@ void parse_port_concis(short source, short dest){
 		case HTTPS: printf("HTTPS  "); break;
 		case DNS: printf("DNS  "); break;
 		case SMTP: printf("SMTP  "); break;
+		case TELNET: printf("TELNET  "); break;
 
 		default: port++; break;
 	}

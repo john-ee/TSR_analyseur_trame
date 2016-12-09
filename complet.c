@@ -29,29 +29,72 @@ void print_ascii(const u_char* packet, int length)
 }
 
 
+void telnet_option(const u_char option)
+{
+	switch(option)
+	{
+
+		case TOECHO : printf("echo"); break;
+
+		case TONOGA : printf("suppresion du go-ahead"); break;
+
+		case TOTERMTYPE : printf("type de terminal"); break;
+
+		case TOLINEMODE : printf("line mode "); break;
+
+		case TOWINSIZE : printf("taille de fenetre"); break;
+
+		case TOTERMSPEED : printf("vitesse du terminal"); break;
+
+		case TOVARIABLES : printf("variables de l'envrionnement"); break;
+
+		case TONEWVARIABLES : printf("variables de l'envrionnement corrigé"); break;		
+
+		default : printf("option non reconnu"); break;
+	}
+	printf("\n");
+}
+
+
 void parse_telnet_complet(const u_char* packet, int length)
 {
-	int i;
-	printf("\tTELNET");
+	int i = 0, parsed = 1;
+	printf("\tTELNET\n");
 	while (i<length)
 	{
-		if (i%47==0)
-			printf("\n\t\t");
 
 		switch(packet[i])
 		{
-			case TCWILL : printf("will "); break;
+			case TCSB : printf("\t\tdébut de sous-négocitation\n"); break;
 
-			case TOECHO : printf("echo "); break;
+			case TCSE : printf("\t\tfin de sous-négocitation\n"); break;
 
-			case TOLINEMODE : printf("line mode "); break;
+			case TCWILL : printf("\t\twill ");
+						  i++;
+						  telnet_option(packet[i]);
+						  break;
 
-			case TOTERMTYPE : printf("terminal type "); break;
+			case TCWONT : printf("\t\twon't ");
+						  i++;
+						  telnet_option(packet[i]);
+						  break;
 
-			default : break;
+			case TCDO : printf("\t\tdo ");
+						i++;
+						telnet_option(packet[i]);
+						break;
+
+
+			case TCDONT : printf("\t\tdon't ");
+						  i++;
+						  telnet_option(packet[i]);
+						  break;
+
+			default : parsed = 0; break;
 		}
 		i++;
 	}
+	printf("\n");
 }
 
 
@@ -92,6 +135,7 @@ void parse_bootp(const u_char* packet)
 				default : printf("\n"); break;
 			}
 		}
+		i++;
 
 		while (vendor[i] != TAG_PAD){
 			size = vendor[i+1];
@@ -112,6 +156,7 @@ void parse_bootp(const u_char* packet)
 						}
 						printf("\n");
 						break;
+
 					case TAG_TIME_OFFSET :
 						printf("\t\tTime Offset");
 						for (j=0;j<size;j++){
@@ -121,6 +166,7 @@ void parse_bootp(const u_char* packet)
 						}
 						printf("\n");
 						break;
+
 					case TAG_GATEWAY :
 						printf("\t\tGateway");
 						for (j=0;j<size;j++){
@@ -130,6 +176,7 @@ void parse_bootp(const u_char* packet)
 						}
 						printf("\n");
 						break;
+
 					case TAG_DOMAIN_SERVER :
 						printf("\t\tServeur DNS");
 						for (j=0;j<size;j++){
@@ -139,24 +186,34 @@ void parse_bootp(const u_char* packet)
 						}
 						printf("\n");
 						break;
+
 					case TAG_HOSTNAME :
 						printf("\t\tNom de l'hôte");
 						for (j=0;j<size;j++){
 							if (j%21==0)
 								printf("\n\t\t");
-							printf("%x ", vendor[i+2+j]);
+							if (isprint(vendor[i+2+j]))
+								printf("%c ", vendor[i+2+j]);
+							else
+								printf(".");
 						}
 						printf("\n");
 						break;
+
 					case TAG_DOMAINNAME	:
 						printf("\t\tNom de domaine");
 						for (j=0;j<size;j++){
 							if (j%21==0)
 								printf("\n\t\t");
-							printf("%x ", vendor[i+2+j]);
+							if (isprint(vendor[i+2+j]))
+								printf("%c ", vendor[i+2+j]);
+							else
+								printf(".");
 						}
 						printf("\n");
 						break;
+
+
 					default : break;
 				}
 

@@ -23,7 +23,11 @@
 #define	TOECHO		(u_char)  1	/* ECHO Option			*/
 #define	TONOGA		(u_char)  3	/* Suppress Go-Ahead Option	*/
 #define	TOTERMTYPE	(u_char) 24	/* Terminal-Type Option		*/
-#define TOLINEMODE	(u_char) 22 /*Terminal Line Mode	*/
+#define TOLINEMODE	(u_char) 34 /* Terminal Line Mode	*/
+#define TOWINSIZE	(u_char) 31 /* Window Size */
+#define TOTERMSPEED	(u_char) 32 /* Terminal Speed */
+#define TOVARIABLES	(u_char) 36 /* environment variables */
+#define TONEWVARIABLES 	(u_char) 39 /* new environment variables */
 
 /* Network Virtual Printer Special Characters: */
 #define	VPLF		'\n'	/* Line Feed				*/

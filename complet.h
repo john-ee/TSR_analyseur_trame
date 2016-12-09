@@ -1,4 +1,7 @@
 void print_ascii(const u_char* packet, int length);
+void telnet_option(const u_char option);
+void parse_telnet_complet(const u_char* packet, int length);
+void parse_bootp(const u_char* packet);
 void parse_port_complet(const u_char* packet, int length, short source, short dest);
 void parse_udp_complet(const u_char* packet, int length);
 void parse_tcp_complet(const u_char* packet, int length);
