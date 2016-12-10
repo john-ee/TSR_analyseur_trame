@@ -23,8 +23,6 @@ void parse_smtp_synthetique(const u_char* packet, int length)
 	const u_char auth[] = AUTH;
 	const u_char starttls[] = STARTTLS;
 
-	u_char message[4];
-
 	int i = 0, j = 0;
 	int mailcmp = 0, rcptcmp = 0, datacmp = 0;
 	int ehlocmp = 0, authcmp = 0, tlscmp = 0;
@@ -37,24 +35,21 @@ void parse_smtp_synthetique(const u_char* packet, int length)
 		ehlocmp = 0;
 		authcmp = 0;
 		tlscmp = 0;
-		for (j=0;j<4;j++)
-			message[j] = packet[i+j];
 
 		for (j=0;j<4;j++)
 		{
-			if (mail[j] == message[j])
+			if (mail[j] == packet[i+j])
 				mailcmp++;
-			if (rcpt[j] == message[j])
+			if (rcpt[j] == packet[i+j])
 				rcptcmp++;
-			if (data[j] == message[j])
+			if (data[j] == packet[i+j])
 				datacmp++;
-			if (ehlo[j] == message[j])
+			if (ehlo[j] == packet[i+j])
 				ehlocmp++;
-			if (auth[j] == message[j]){
+			if (auth[j] == packet[i+j])
 				authcmp++;
-			if (starttls[j] == message[j])
+			if (starttls[j] == packet[i+j])
 				tlscmp++;
-			}
 		}
 
 		if (mailcmp == 4 || rcptcmp == 4)
@@ -78,9 +73,10 @@ void parse_smtp_synthetique(const u_char* packet, int length)
 			printf("Authentification ");
 
 		if (i < length-8){
-			for (j=4;j<8;j++)
+			for (j=4;j<8;j++){
 				if (starttls[j] == packet[i+j])
 					tlscmp++;
+			}
 			if (tlscmp == 8)
 				printf("Echange en TLS ");
 		}
@@ -97,8 +93,6 @@ void parse_http_synthetique(const u_char* packet, int length)
 	const u_char put[] = PUT;
 	const u_char head[] = HEAD;
 	const u_char post[] = POST;
-	
-	u_char message[4];
 
 	int i = 0, j = 0;
 	int getcmp = 0, putcmp = 0, headcmp = 0, postcmp = 0;
@@ -110,30 +104,28 @@ void parse_http_synthetique(const u_char* packet, int length)
 		headcmp = 0;
 		postcmp = 0;
 
-		for (j=0;j<4;j++)
-			message[j] = packet[i+j];
-
 		for (j=0;j<3;j++)
 		{
-			if (get[j] == message[j])
+			if (get[j] == packet[i+j])
 				getcmp++;
-			if (put[j] == message[j])
+			if (put[j] == packet[i+j])
 				putcmp++;
-			if (head[j] == message[j])
+			if (head[j] == packet[i+j])
 				headcmp++;
-			if (post[j] == message[j])
+			if (post[j] == packet[i+j])
 				postcmp++;
 		}
+		j = 3;
 		if (getcmp == 3)
 			printf("GET");
 
 		if (putcmp == 3)
 			printf("PUT");
 
-		if (head[j] == message[j] && headcmp == 4)
+		if (head[j] == packet[i+j] && headcmp == 4)
 			printf("HEAD");
 
-		if (post[j] == message[j] && postcmp == 4)
+		if (post[j] == packet[i+j] && postcmp == 4)
 			printf("POST");
 
 		i++;
@@ -196,7 +188,7 @@ void parse_port_synthetique(const u_char* packet, int length, short source, shor
 				break;
 
 			case HTTP:
-				printf("\tHTTP");
+				printf("\tHTTP ");
 				parse_http_synthetique(packet, length);
 				break;
 
@@ -246,7 +238,7 @@ void parse_port_synthetique(const u_char* packet, int length, short source, shor
 				break;
 
 			case HTTP:
-				printf("\tHTTP");
+				printf("\tHTTP ");
 				parse_http_synthetique(packet, length);
 				break;
 

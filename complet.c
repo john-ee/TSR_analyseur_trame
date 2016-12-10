@@ -36,12 +36,11 @@ void parse_smtp_complet(const u_char* packet, int length)
 	const u_char data[] = DATA;
 	const u_char ehlo[] = EHLO;
 	const u_char auth[] = AUTH;
-
-	u_char message[4];
+	const u_char starttls[] = STARTTLS;
 
 	int i = 0, j = 0;
 	int mailcmp = 0, rcptcmp = 0, datacmp = 0;
-	int ehlocmp = 0, authcmp = 0;
+	int ehlocmp = 0, authcmp = 0, tlscmp = 0;
 
 	while (i<length-4)
 	{
@@ -50,38 +49,47 @@ void parse_smtp_complet(const u_char* packet, int length)
 		datacmp = 0;
 		ehlocmp = 0;
 		authcmp = 0;
-		for (j=0;j<4;j++)
-			message[j] = packet[i+j];
+		tlscmp = 0;
 
 		for (j=0;j<4;j++)
 		{
-			if (mail[j] == message[j])
+			if (mail[j] == packet[i+j])
 				mailcmp++;
-			if (rcpt[j] == message[j])
+			if (rcpt[j] == packet[i+j])
 				rcptcmp++;
-			if (data[j] == message[j])
+			if (data[j] == packet[i+j])
 				datacmp++;
-			if (ehlo[j] == message[j])
+			if (ehlo[j] == packet[i+j])
 				ehlocmp++;
-			if (auth[j] == message[j]){
+			if (auth[j] == packet[i+j])
 				authcmp++;
-			}
+			if (starttls[j] == packet[i+j])
+				tlscmp++;
 		}
 
 		if (mailcmp == 4)
-			printf("\t\tEmetteur");
+			printf("\t\tEmetteur ");
 
 		if (rcptcmp == 4)
-			printf("\t\tRécepteur");
+			printf("\t\tRécepteur ");
 
 		if (datacmp == 4)
-			printf("\t\tContenu de l'e-mail");
+			printf("\t\tContenu de l'e-mail ");
 
 		if (ehlocmp == 4)
-			printf("\t\tRequête EHLO");
+			printf("\t\tRequête EHLO ");
 
 		if (authcmp == 4)
-			printf("\t\tAuthentification");
+			printf("\t\tAuthentification ");
+
+		if (i < length-8){
+			for (j=4;j<8;j++){
+				if (starttls[j] == packet[i+j])
+					tlscmp++;
+			}
+			if (tlscmp == 8)
+				printf("Echange en TLS ");
+		}
 
 		i++;
 	}
@@ -97,8 +105,6 @@ void parse_http_complet(const u_char* packet, int length)
 	const u_char head[] = HEAD;
 	const u_char post[] = POST;
 	
-	u_char message[4];
-
 	int i = 0, j = 0;
 	int getcmp = 0, putcmp = 0, headcmp = 0, postcmp = 0;
 
@@ -108,19 +114,16 @@ void parse_http_complet(const u_char* packet, int length)
 		putcmp = 0;
 		headcmp = 0;
 		postcmp = 0;
-		
-		for (j=0;j<4;j++)
-			message[j] = packet[i+j];
 
 		for (j=0;j<3;j++)
 		{
-			if (get[j] == message[j])
+			if (get[j] == packet[i+j])
 				getcmp++;
-			if (put[j] == message[j])
+			if (put[j] == packet[i+j])
 				putcmp++;
-			if (head[j] == message[j])
+			if (head[j] == packet[i+j])
 				headcmp++;
-			if (post[j] == message[j])
+			if (post[j] == packet[i+j])
 				postcmp++;
 		}
 		if (getcmp == 3)
@@ -129,10 +132,10 @@ void parse_http_complet(const u_char* packet, int length)
 		if (putcmp == 3)
 			printf("\t\tPUT");
 
-		if (head[j] == message[j] && headcmp == 4)
+		if (head[j] == packet[i+j] && headcmp == 4)
 			printf("\t\tHEAD");
 
-		if (post[j] == message[j] && postcmp == 4)
+		if (post[j] == packet[i+j] && postcmp == 4)
 			printf("\t\tPOST");
 
 		i++;
