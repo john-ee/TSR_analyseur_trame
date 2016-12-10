@@ -16,9 +16,9 @@
 
 //HTTP
 #define GET { 71, 69, 84 }
+#define PUT { 80, 85, 84 }
 #define HEAD { 72, 69, 65, 68 }
 #define POST { 80, 79, 83, 84 }
-//OPTIONS, PUT, DELETE, TRACE
 
 // SMTP
 #define MAIL { 77, 65, 73, 76 }
@@ -26,3 +26,4 @@
 #define DATA { 68, 65, 84, 65 }
 #define EHLO { 69, 72, 76, 79 }
 #define AUTH { 65, 85, 84, 72 }
+#define STARTTLS { 83, 84, 65, 82, 84, 84, 76, 83 }

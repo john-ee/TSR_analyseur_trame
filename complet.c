@@ -29,6 +29,119 @@ void print_ascii(const u_char* packet, int length)
 }
 
 
+void parse_smtp_complet(const u_char* packet, int length)
+{
+	const u_char mail[] = MAIL;
+	const u_char rcpt[] = RCPT;
+	const u_char data[] = DATA;
+	const u_char ehlo[] = EHLO;
+	const u_char auth[] = AUTH;
+
+	u_char message[4];
+
+	int i = 0, j = 0;
+	int mailcmp = 0, rcptcmp = 0, datacmp = 0;
+	int ehlocmp = 0, authcmp = 0;
+
+	while (i<length-4)
+	{
+		mailcmp = 0;
+		rcptcmp = 0;
+		datacmp = 0;
+		ehlocmp = 0;
+		authcmp = 0;
+		for (j=0;j<4;j++)
+			message[j] = packet[i+j];
+
+		for (j=0;j<4;j++)
+		{
+			if (mail[j] == message[j])
+				mailcmp++;
+			if (rcpt[j] == message[j])
+				rcptcmp++;
+			if (data[j] == message[j])
+				datacmp++;
+			if (ehlo[j] == message[j])
+				ehlocmp++;
+			if (auth[j] == message[j]){
+				authcmp++;
+			}
+		}
+
+		if (mailcmp == 4)
+			printf("\t\tEmetteur");
+
+		if (rcptcmp == 4)
+			printf("\t\tRécepteur");
+
+		if (datacmp == 4)
+			printf("\t\tContenu de l'e-mail");
+
+		if (ehlocmp == 4)
+			printf("\t\tRequête EHLO");
+
+		if (authcmp == 4)
+			printf("\t\tAuthentification");
+
+		i++;
+	}
+	print_ascii(packet, length);
+}
+
+
+
+void parse_http_complet(const u_char* packet, int length)
+{
+	const u_char get[] = GET;
+	const u_char put[] = PUT;
+	const u_char head[] = HEAD;
+	const u_char post[] = POST;
+	
+	u_char message[4];
+
+	int i = 0, j = 0;
+	int getcmp = 0, putcmp = 0, headcmp = 0, postcmp = 0;
+
+	while (i<length-4)
+	{
+		getcmp = 0;
+		putcmp = 0;
+		headcmp = 0;
+		postcmp = 0;
+		
+		for (j=0;j<4;j++)
+			message[j] = packet[i+j];
+
+		for (j=0;j<3;j++)
+		{
+			if (get[j] == message[j])
+				getcmp++;
+			if (put[j] == message[j])
+				putcmp++;
+			if (head[j] == message[j])
+				headcmp++;
+			if (post[j] == message[j])
+				postcmp++;
+		}
+		if (getcmp == 3)
+			printf("\t\tGET");
+
+		if (putcmp == 3)
+			printf("\t\tPUT");
+
+		if (head[j] == message[j] && headcmp == 4)
+			printf("\t\tHEAD");
+
+		if (post[j] == message[j] && postcmp == 4)
+			printf("\t\tPOST");
+
+		i++;
+	}
+
+	print_ascii(packet, length);
+}
+
+
 void telnet_option(const u_char option)
 {
 	switch(option)
@@ -231,72 +344,106 @@ void parse_port_complet(const u_char* packet, int length, short source, short de
 	printf("\t\tPort Source : %x\n",source);
 	printf("\t\tPort Source : %x\n",dest);
 	int not_parsed = 0;
-	switch(source){
-		case FTPC:  printf("\t\tFTP: Envoi de données\n");
-					print_ascii(packet, length);
-					break;
 
-		case FTPS:  printf("\t\tFTP: Envoi de requêtes\n");
-					print_ascii(packet, length);
-					break;
+	switch(source)
+	{
+		case FTPC:
+			printf("\t\tFTP: Envoi de données\n");
+			print_ascii(packet, length);
+			break;
+
+		case FTPS:
+			printf("\t\tFTP: Envoi de requêtes\n");
+			print_ascii(packet, length);
+			break;
+
 		case HTTP:
-		case HTTPS: printf("\tHTTP\n");
-					print_ascii(packet, length);
-					break;
+			printf("\tHTTP\n");
+			parse_http_complet(packet,length);
+			break;
 
-		case DNS: printf("\tDNS\n");
-				  print_ascii(packet, length);
-				  break;
+		case HTTPS:
+			printf("\tHTTP sécurisé\n");
+			parse_http_complet(packet,length);
+			break;
+
+		case DNS:
+			printf("\tDNS\n");
+			print_ascii(packet, length);
+			break;
 
 		case SMTP:
-		case SMTPS: printf("\tSMTP\n");
-					print_ascii(packet, length);
-					break;
+			printf("\tSMTP\n");
+			parse_smtp_complet( packet, length);
+			break;
+
+		case SMTPS:
+			printf("\tSMTP sécurisé\n");
+			parse_smtp_complet( packet, length);
+			break;
 
 		case BOOTPS:
-		case BOOTPC: parse_bootp(packet); break;
+		case BOOTPC:
+			parse_bootp(packet);
+			break;
 
-		case TELNET: parse_telnet_complet(packet, length); break; 
+		case TELNET:
+			parse_telnet_complet(packet, length);
+			break; 
 
 		default: not_parsed++; break;
-
-		}
+	}
 
 	if (not_parsed)
 	{
 		switch(dest)
 		{
-			case FTPC:  printf("\t\tFTP: Envoi de données\n");
-						print_ascii(packet, length);
-						break;
+			case FTPC:
+				printf("\t\tFTP: Envoi de données\n");
+				print_ascii(packet, length);
+				break;
 
-			case FTPS:  printf("\t\tFTP: Envoi de requêtes\n");
-						print_ascii(packet, length);
-						break;
+			case FTPS:
+				printf("\t\tFTP: Envoi de requêtes\n");
+				print_ascii(packet, length);
+				break;
 
-			case HTTP:  
-			case HTTPS: printf("\tHTTP\n");
-						print_ascii(packet, length);
-						break;
+			case HTTP:
+				printf("\tHTTP\n");
+				parse_http_complet(packet,length);
+				break;
 
-			case DNS: printf("\tDNS\n");
-				  	  print_ascii(packet, length);
-					  break;
+			case HTTPS:
+				printf("\tHTTP sécurisé\n");
+				parse_http_complet(packet,length);
+				break;
+
+			case DNS:
+				printf("\tDNS\n");
+				print_ascii(packet, length);
+				break;
 
 			case SMTP:
-			case SMTPS:	printf("\tSMTP\n");
-						print_ascii(packet, length);
-						break;
+				printf("\tSMTP\n");
+				parse_smtp_complet( packet, length);
+				break;
+
+			case SMTPS:
+				printf("\tSMTP sécurisé\n");
+				parse_smtp_complet( packet, length);
+				break;
 
 			case BOOTPS:
-			case BOOTPC: parse_bootp(packet);
-						 break;
+			case BOOTPC:
+				parse_bootp(packet);
+				break;
 
-			case TELNET: parse_telnet_complet(packet, length); break; 
+			case TELNET:
+				parse_telnet_complet(packet, length);
+				break; 
 
-			default: printf("\t\tPort Applicatif non reconnu\n");
-					 print_ascii(packet, length);
-					 break;
+			default:
+				break;
 		}
 	}
 }

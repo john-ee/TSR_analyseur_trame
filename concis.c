@@ -11,8 +11,9 @@
 #include "port.h"
 
 
-void parse_port_concis(short source, short dest){
-		int port = 0;
+void parse_port_concis(short source, short dest)
+{
+	int port = 0;
 
 	switch(source){
 		case FTPC: printf("FTP:Client  "); break;
@@ -21,6 +22,7 @@ void parse_port_concis(short source, short dest){
 		case HTTPS: printf("HTTPS  "); break;
 		case DNS: printf("DNS  "); break;
 		case SMTP: printf("SMTP  "); break;
+		case SMTPS: printf("SMTPS  "); break;
 		case TELNET: printf("TELNET  "); break;
 
 		default: port++; break;
@@ -33,6 +35,7 @@ void parse_port_concis(short source, short dest){
 		case HTTPS: printf("HTTPS  "); break;
 		case DNS: printf("DNS  "); break;
 		case SMTP: printf("SMTP  "); break;
+		case SMTPS: printf("SMTPS  "); break;
 		case TELNET: printf("TELNET  "); break;
 
 		default: port++; break;

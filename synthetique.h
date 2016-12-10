@@ -1,3 +1,5 @@
+void parse_smtp_synthetique(const u_char* packet, int length);
+void parse_http_synthetique(const u_char* packet, int length);
 void parse_bootp_synthetique(const u_char* packet);
 void parse_port_synthetique(const u_char* packet, int length, short source, short dest);
 void parse_udp_synthetique(const u_char* packet, int length);

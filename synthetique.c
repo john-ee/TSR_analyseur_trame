@@ -16,25 +16,27 @@
 
 void parse_smtp_synthetique(const u_char* packet, int length)
 {
-	printf("\tSMTP ");
-
-	u_char mail[] = MAIL;
-	u_char rcpt[] = RCPT;
-	u_char data[] = DATA;
-	u_char ehlo[] = EHLO;
-	u_char auth[] = AUTH;
+	const u_char mail[] = MAIL;
+	const u_char rcpt[] = RCPT;
+	const u_char data[] = DATA;
+	const u_char ehlo[] = EHLO;
+	const u_char auth[] = AUTH;
+	const u_char starttls[] = STARTTLS;
 
 	u_char message[4];
 
 	int i = 0, j = 0;
 	int mailcmp = 0, rcptcmp = 0, datacmp = 0;
-	int ehlocmp = 0, authcmp = 0;
+	int ehlocmp = 0, authcmp = 0, tlscmp = 0;
 
 	while (i<length-4)
 	{
 		mailcmp = 0;
 		rcptcmp = 0;
 		datacmp = 0;
+		ehlocmp = 0;
+		authcmp = 0;
+		tlscmp = 0;
 		for (j=0;j<4;j++)
 			message[j] = packet[i+j];
 
@@ -42,11 +44,19 @@ void parse_smtp_synthetique(const u_char* packet, int length)
 		{
 			if (mail[j] == message[j])
 				mailcmp++;
-			else if (rcpt[j] == message[j])
+			if (rcpt[j] == message[j])
 				rcptcmp++;
-			else if (data[j] == message[j])
+			if (data[j] == message[j])
 				datacmp++;
+			if (ehlo[j] == message[j])
+				ehlocmp++;
+			if (auth[j] == message[j]){
+				authcmp++;
+			if (starttls[j] == message[j])
+				tlscmp++;
+			}
 		}
+
 		if (mailcmp == 4 || rcptcmp == 4)
 		{
 			while (i<length){
@@ -58,8 +68,22 @@ void parse_smtp_synthetique(const u_char* packet, int length)
 			}
 		}
 
-		else if (datacmp == 4)
-			printf("DATA");
+		if (datacmp == 4)
+			printf("Contenu de l'e-mail ");
+
+		if (ehlocmp == 4)
+			printf("Requête EHLO");
+
+		if (authcmp == 4)
+			printf("Authentification ");
+
+		if (i < length-8){
+			for (j=4;j<8;j++)
+				if (starttls[j] == packet[i+j])
+					tlscmp++;
+			if (tlscmp == 8)
+				printf("Echange en TLS ");
+		}
 
 		i++;
 	}
@@ -69,20 +93,23 @@ void parse_smtp_synthetique(const u_char* packet, int length)
 
 void parse_http_synthetique(const u_char* packet, int length)
 {
-	u_char get[] = GET;
-	u_char head[] = HEAD;
-	u_char post[] = POST;
-
+	const u_char get[] = GET;
+	const u_char put[] = PUT;
+	const u_char head[] = HEAD;
+	const u_char post[] = POST;
+	
 	u_char message[4];
 
 	int i = 0, j = 0;
-	int getcmp = 0, headcmp = 0, postcmp = 0;
+	int getcmp = 0, putcmp = 0, headcmp = 0, postcmp = 0;
 
 	while (i<length-4)
 	{
 		getcmp = 0;
+		putcmp = 0;
 		headcmp = 0;
 		postcmp = 0;
+
 		for (j=0;j<4;j++)
 			message[j] = packet[i+j];
 
@@ -90,22 +117,29 @@ void parse_http_synthetique(const u_char* packet, int length)
 		{
 			if (get[j] == message[j])
 				getcmp++;
-			else if (head[j] == message[j])
+			if (put[j] == message[j])
+				putcmp++;
+			if (head[j] == message[j])
 				headcmp++;
-			else if (post[j] == message[j])
+			if (post[j] == message[j])
 				postcmp++;
 		}
 		if (getcmp == 3)
-			printf("\tGET\n");
+			printf("GET");
 
-		else if (head[j] == message[j] && headcmp == 4)
-			printf("\tHEAD\n");
+		if (putcmp == 3)
+			printf("PUT");
 
-		else if (post[j] == message[j] && postcmp == 4)
-			printf("\tPOST\n");
+		if (head[j] == message[j] && headcmp == 4)
+			printf("HEAD");
+
+		if (post[j] == message[j] && postcmp == 4)
+			printf("POST");
 
 		i++;
 	}
+
+	printf("\n");
 }
 
 
@@ -150,38 +184,50 @@ void parse_bootp_synthetique(const u_char* packet){
 void parse_port_synthetique(const u_char* packet, int length, short source, short dest){
 	
 	int not_parsed = 0;
-	printf("\t%x -> %x\n",source, dest);
+	printf("%x -> %x\n",source, dest);
 
 	switch(source){
-		case FTPC:
-			printf("\t\tFTP: Envoi de données\n");
-			break;
+			case FTPC:
+				printf("\t\tFTP: Envoi de données\n");
+				break;
 
-		case FTPS: 
-			printf("\t\tFTP: Envoi de requêtes\n");
-			break;
-		case HTTP:
-		case HTTPS:
-			printf("\tHTTP\n");
-			break;
+			case FTPS: 
+				printf("\t\tFTP: Envoi de requêtes\n");
+				break;
 
-		case DNS:
-			printf("\tDNS\n");
-			break;
+			case HTTP:
+				printf("\tHTTP");
+				parse_http_synthetique(packet, length);
+				break;
 
-		case SMTP:
-		case SMTPS:
-			parse_smtp_synthetique(packet, length);
-			break;
+			case HTTPS:
+				printf("\tHTTP sécurisé ");
+				parse_http_synthetique(packet, length);
+				break;
 
-		case BOOTPS:
-		case BOOTPC:
-			parse_bootp_synthetique(packet);
-			break;
+			case DNS:
+				printf("\tDNS\n");
+				break;
 
-		case TELNET:
-			printf("\tTELNET\n");
-			break; 
+			case SMTP:
+				printf("\tSMTP ");
+				parse_smtp_synthetique(packet, length);
+				break;
+
+			case SMTPS:
+				printf("sécurisé ");
+				parse_smtp_synthetique(packet, length);
+				break;
+
+			case BOOTPS:
+
+			case BOOTPC:
+				parse_bootp_synthetique(packet);
+				break;
+
+			case TELNET:
+				printf("\tTELNET\n");
+				break;
 
 		default: not_parsed++; break;
 
@@ -192,37 +238,50 @@ void parse_port_synthetique(const u_char* packet, int length, short source, shor
 		switch(dest)
 		{
 			case FTPC:
-			printf("\t\tFTP: Envoi de données\n");
-			break;
+				printf("\t\tFTP: Envoi de données\n");
+				break;
 
-		case FTPS: 
-			printf("\t\tFTP: Envoi de requêtes\n");
-			break;
-		case HTTP:
-		case HTTPS:
-			printf("\tHTTP\n");
-			break;
+			case FTPS: 
+				printf("\t\tFTP: Envoi de requêtes\n");
+				break;
 
-		case DNS:
-			printf("\tDNS\n");
-			break;
+			case HTTP:
+				printf("\tHTTP");
+				parse_http_synthetique(packet, length);
+				break;
 
-		case SMTP:
-		case SMTPS:
-			parse_smtp_synthetique(packet, length);
-			break;
+			case HTTPS:
+				printf("\tHTTP sécurisé ");
+				parse_http_synthetique(packet, length);
+				break;
 
-		case BOOTPS:
-		case BOOTPC:
-			parse_bootp_synthetique(packet);
-			break;
+			case DNS:
+				printf("\tDNS\n");
+				break;
 
-		case TELNET:
-			printf("\tTELNET\n");
-			break; 
+			case SMTP:
+				printf("\tSMTP ");
+				parse_smtp_synthetique(packet, length);
+				break;
+
+			case SMTPS:
+				printf("sécurisé ");
+				parse_smtp_synthetique(packet, length);
+				break;
+
+			case BOOTPS:
+
+			case BOOTPC:
+				parse_bootp_synthetique(packet);
+				break;
+
+			case TELNET:
+				printf("\tTELNET\n");
+				break;
+
 			default: printf("\tPort Applicatif non reconnu\n");
-					 break;
-		}
+				break;
+			}
 	}
 }
 
@@ -235,7 +294,7 @@ void parse_udp_synthetique(const u_char* packet, int length){
 	short dest = ntohs(udp_header->uh_dport);
 	int not_parsed = 0;
 
-	printf("\tUDP\n");
+	printf("\tUDP ");
 
 	for (i=0;i<size;i++)
 		packet++;
@@ -270,7 +329,7 @@ void parse_tcp_synthetique(const u_char* packet, int length){
 
 	for (i=0;i<size;i++)
 		packet++;
-	printf("\n");
+	printf(" ");
 	
 	parse_port_synthetique(packet, length-size, source, dest);
 }
@@ -282,14 +341,14 @@ void parse_ip_synthetique(const u_char* packet, int length){
 	struct ip *ip_header = (struct ip *) packet;
 	int size = sizeof(struct ip);
 	
-	printf("\tIPv%x\n",ip_header->ip_v);
+	printf("\tIPv%x ",ip_header->ip_v);
 
 	for (i=0;i<size;i++)
 		packet++;
 
 	char *src = strdup(inet_ntoa(ip_header->ip_src));
 	char *dst = strdup(inet_ntoa(ip_header->ip_dst));
-	printf("\t%s -> %s\n", src, dst);
+	printf("%s -> %s\n", src, dst);
 
 	free(src);
 	free(dst);
