@@ -1,3 +1,8 @@
+/*
+ * auteur : John-Nathan HILL
+ * brief : 
+ */
+
 #define UDP 0x0011
 #define TCP 0x0006
 

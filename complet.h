@@ -1,3 +1,9 @@
+/*
+ * auteur : John-Nathan HILL
+ * brief : 
+ */
+
+
 void print_ascii(const u_char* packet, int length);
 void telnet_option(const u_char option);
 void parse_telnet_complet(const u_char* packet, int length);

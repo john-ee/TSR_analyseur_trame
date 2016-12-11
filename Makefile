@@ -1,4 +1,4 @@
-APPLI=main
+APPLI=analyseur
 CSRC= main.c complet.c synthetique.c concis.c
 CC = gcc -g
 
