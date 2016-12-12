@@ -1,6 +1,5 @@
 /*
  * auteur : John-Nathan HILL
- * brief : 
  */
 
 
@@ -18,6 +17,7 @@
 #include "bootp.h"
 #include "telnet.h"
 #include "port.h"
+
 
 void print_ascii(const u_char* packet, int length)
 {
@@ -103,7 +103,6 @@ void parse_smtp_complet(const u_char* packet, int length)
 }
 
 
-
 void parse_http_complet(const u_char* packet, int length)
 {
 	const u_char get[] = GET;
@@ -187,32 +186,41 @@ void parse_telnet_complet(const u_char* packet, int length)
 
 		switch(packet[i])
 		{
-			case TCSB : printf("\t\tdébut de sous-négocitation\n"); break;
+			case TCSB :
+				printf("\t\tdébut de sous-négocitation\n");
+				break;
 
-			case TCSE : printf("\t\tfin de sous-négocitation\n"); break;
+			case TCSE :
+				printf("\t\tfin de sous-négocitation\n");
+				break;
 
-			case TCWILL : printf("\t\twill ");
-						  i++;
-						  telnet_option(packet[i]);
-						  break;
+			case TCWILL :
+				printf("\t\twill ");
+				i++;
+				telnet_option(packet[i]);
+				break;
 
-			case TCWONT : printf("\t\twon't ");
-						  i++;
-						  telnet_option(packet[i]);
-						  break;
+			case TCWONT :
+				printf("\t\twon't ");
+				i++;
+				telnet_option(packet[i]);
+				break;
 
-			case TCDO : printf("\t\tdo ");
-						i++;
-						telnet_option(packet[i]);
-						break;
+			case TCDO :
+				printf("\t\tdo ");
+				i++;
+				telnet_option(packet[i]);
+				break;
 
 
-			case TCDONT : printf("\t\tdon't ");
-						  i++;
-						  telnet_option(packet[i]);
-						  break;
+			case TCDONT :
+				printf("\t\tdon't ");
+				i++;
+				telnet_option(packet[i]);
+				break;
 
-			default : parsed = 0; break;
+			default :
+				break;
 		}
 		i++;
 	}
@@ -228,7 +236,8 @@ void parse_bootp(const u_char* packet)
 	u_char info[BP_VEND_LEN];
 	int size = 0;
 
-	switch (bootp_header->bp_op){
+	switch (bootp_header->bp_op)
+	{
 		case BOOTREPLY : printf("\t\tBOOTREPLY\n"); break;
 		case BOOTREQUEST : printf("\t\tBOOTREQUEST\n"); break;
 		default : break;
@@ -237,18 +246,21 @@ void parse_bootp(const u_char* packet)
 	u_char *vendor = bootp_header->bp_vend;
 	u_char magic_cookie[] = VM_RFC1048;
 	
-	for (i=0;i<4;i++){
+	for (i=0;i<4;i++)
+	{
 		if (vendor[i] == magic_cookie[i])
 			dhcp++;
 	}
-	if (dhcp == 4){
-		printf("\t\tExtensions présentes\n");
+	if (dhcp == 4)
+	{
 
 		i=4;
-		if (vendor[i] == 53){
+		if (vendor[i] == 53)
+		{
 			printf("\t\tDHCP ");
 			i+=2;
-			switch(vendor[i]){
+			switch(vendor[i])
+			{
 				case 01 : printf("discover\n"); break;
 				case 02 : printf("offer\n"); break;
 				case 03 : printf("request\n"); break;
@@ -256,97 +268,108 @@ void parse_bootp(const u_char* packet)
 				case 07 : printf("release\n"); break;
 				default : printf("\n"); break;
 			}
-		}
-		i++;
+			i++;
 
-		while (vendor[i] != TAG_PAD){
-			size = vendor[i+1];
-
-			if (size)
+			while (vendor[i] != TAG_PAD)
 			{
-				for (j=0;j<size;j++)
-					info[j] = vendor[i+2+j];
-				info[j] = '\0';
+				size = vendor[i+1];
 
-				switch(vendor[i]){
-					case TAG_SUBNET_MASK :
-						printf("\t\tMasque du sous-réseau");
-						for (j=0;j<size;j++){
-							if (j%21==0)
-								printf("\n\t\t");
-							printf("%x ", vendor[i+2+j]);
-						}
-						printf("\n");
-						break;
+				if (size)
+				{
+					for (j=0;j<size;j++)
+						info[j] = vendor[i+2+j];
+					info[j] = '\0';
 
-					case TAG_TIME_OFFSET :
-						printf("\t\tTime Offset");
-						for (j=0;j<size;j++){
-							if (j%21==0)
-								printf("\n\t\t");
-							printf("%x ", vendor[i+2+j]);
-						}
-						printf("\n");
-						break;
+					switch(vendor[i])
+					{
+						case TAG_SUBNET_MASK :
+							printf("\t\tMasque du sous-réseau");
+							for (j=0;j<size;j++)
+							{
+								if (j%21==0)
+									printf("\n\t\t");
+								printf("%x ", vendor[i+2+j]);
+							}
+							printf("\n");
+							break;
 
-					case TAG_GATEWAY :
-						printf("\t\tGateway");
-						for (j=0;j<size;j++){
-							if (j%21==0)
-								printf("\n\t\t");
-							printf("%x ", vendor[i+2+j]);
-						}
-						printf("\n");
-						break;
+						case TAG_TIME_OFFSET :
+							printf("\t\tTime Offset");
+							for (j=0;j<size;j++)
+							{
+								if (j%21==0)
+									printf("\n\t\t");
+								printf("%x ", vendor[i+2+j]);
+							}
+							printf("\n");
+							break;
 
-					case TAG_DOMAIN_SERVER :
-						printf("\t\tServeur DNS");
-						for (j=0;j<size;j++){
-							if (j%21==0)
-								printf("\n\t\t");
-							printf("%x ", vendor[i+2+j]);
-						}
-						printf("\n");
-						break;
+						case TAG_GATEWAY :
+							printf("\t\tGateway");
+							for (j=0;j<size;j++)
+							{
+								if (j%21==0)
+									printf("\n\t\t");
+								printf("%x ", vendor[i+2+j]);
+							}
+							printf("\n");
+							break;
 
-					case TAG_HOSTNAME :
-						printf("\t\tNom de l'hôte");
-						for (j=0;j<size;j++){
-							if (j%21==0)
-								printf("\n\t\t");
-							if (isprint(vendor[i+2+j]))
-								printf("%c ", vendor[i+2+j]);
-							else
-								printf(".");
-						}
-						printf("\n");
-						break;
+						case TAG_DOMAIN_SERVER :
+							printf("\t\tServeur DNS");
+							for (j=0;j<size;j++)
+							{
+								if (j%21==0)
+									printf("\n\t\t");
+								printf("%x ", vendor[i+2+j]);
+							}
+							printf("\n");
+							break;
 
-					case TAG_DOMAINNAME	:
-						printf("\t\tNom de domaine");
-						for (j=0;j<size;j++){
-							if (j%21==0)
-								printf("\n\t\t");
-							if (isprint(vendor[i+2+j]))
-								printf("%c ", vendor[i+2+j]);
-							else
-								printf(".");
-						}
-						printf("\n");
-						break;
+						case TAG_HOSTNAME :
+							printf("\t\tNom de l'hôte");
+							for (j=0;j<size;j++)
+							{
+								if (j%21==0)
+									printf("\n\t\t");
+								if (isprint(vendor[i+2+j]))
+									printf("%c ", vendor[i+2+j]);
+								else
+									printf(".");
+							}
+							printf("\n");
+							break;
+
+						case TAG_DOMAINNAME	:
+							printf("\t\tNom de domaine");
+							for (j=0;j<size;j++)
+							{
+
+								if (j%21==0)
+									printf("\n\t\t");
+								if (isprint(vendor[i+2+j]))
+									printf("%c ", vendor[i+2+j]);
+								else
+									printf(".");
+							}
+							printf("\n");
+							break;
 
 
-					default : break;
+						default : break;
+					}
+					i+=size;
 				}
-
-				i+=size;
+				else
+					i++;
 			}
-			else
-				i++;
 		}
+		else
+			printf("\t\tExtensions présentes\n");
 	}
 
 }
+
 
 void parse_port_complet(const u_char* packet, int length, short source, short dest)
 {
@@ -457,6 +480,7 @@ void parse_port_complet(const u_char* packet, int length, short source, short de
 	}
 }
 
+
 void parse_udp_complet(const u_char* packet, int length)
 {
 	int i;
@@ -510,7 +534,8 @@ void parse_tcp_complet(const u_char* packet, int length)
 }
 
 
-void parse_ip_complet(const u_char* packet, int length){
+void parse_ip_complet(const u_char* packet, int length)
+{
 	int i;
 
 	struct ip *ip_header = (struct ip *) packet;
@@ -544,14 +569,12 @@ void parse_ip_complet(const u_char* packet, int length){
 }
 
 
-
 void parse_eth(const u_char* packet, int length)
 {
-	u_char *ptr;
-
     int i;
 
-    /* ethernet header */
+    u_char *ptr;
+
     struct ether_header *eptr = (struct ether_header *) packet;
     int size = sizeof(struct ether_header);
 	printf("\tEthernet\n");
@@ -572,9 +595,8 @@ void parse_eth(const u_char* packet, int length)
 	for (i=0;i<size;i++)
 		packet++;
 
-	/* on verifie si c'est protocole IP */
-	if (ntohs(eptr->ether_type) == ETHERTYPE_IP){
-		//printf("\t\tPacket IP\n");
+	if (ntohs(eptr->ether_type) == ETHERTYPE_IP)
+	{
 
 		parse_ip_complet(packet, length - size);
 	}
@@ -594,8 +616,7 @@ void packet_reader_complet(u_char *useless,const struct pcap_pkthdr* pkthdr,cons
 {
 	static int count = 1;
 	printf("[%d]\n",count);
-    /* on lit la taille du packet */
-	fprintf(stdout,"\tlength: %d\n",pkthdr->len);
+	printf("\tlength: %d\n",pkthdr->len);
     parse_eth(packet, pkthdr->len);
 
 	count++;

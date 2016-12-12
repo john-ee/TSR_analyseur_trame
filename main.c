@@ -1,6 +1,5 @@
 /*
  * auteur : John-Nathan HILL
- * brief : Ce module permet de lancer le programme 'analyseur'
  */
 
 #include <stdio.h>

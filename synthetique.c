@@ -18,10 +18,7 @@
 #include "bootp.h"
 #include "port.h"
 
-/*
- * brief : Cette fonction parcoure la trame en recherche de mot-clés
- * pour les afficher sur le terminal
- */
+
 void parse_smtp_synthetique(const u_char* packet, int length)
 {
 	// On récupère les tableaux dans port.h
@@ -105,10 +102,7 @@ void parse_smtp_synthetique(const u_char* packet, int length)
 	printf("\n");
 }
 
-/*
- * brief : Cette fonction parcoure la trame en recherche de mot-clés
- * pour les afficher sur le terminal
- */
+
 void parse_http_synthetique(const u_char* packet, int length)
 {
 	// On récupère les tableaux dans port.h
@@ -163,9 +157,7 @@ void parse_http_synthetique(const u_char* packet, int length)
 	printf("\n");
 }
 
-/*
- * brief : On utilise bootp.h pour décoder la trame s'il s'agit de BOOTP
- */
+
 void parse_bootp_synthetique(const u_char* packet)
 {
 	// On cast le packet dans un en-tête bootp
@@ -219,10 +211,7 @@ void parse_bootp_synthetique(const u_char* packet)
 	}
 }
 
-/*
- * brief : On regarde les ports pour les reconnaître
- * On utilise port.h
- */
+
 void parse_port_synthetique(const u_char* packet, int length, short source, short dest)
 {
 	// Cette variable servira a savoir si l'on a reconnu un port
@@ -331,9 +320,7 @@ void parse_port_synthetique(const u_char* packet, int length, short source, shor
 	}
 }
 
-/*
- * brief : On affiche que c'est de l'UDP et on envoie le packet dans parse_port
- */
+
 void parse_udp_synthetique(const u_char* packet, int length)
 {
 	int i;
@@ -352,9 +339,7 @@ void parse_udp_synthetique(const u_char* packet, int length)
 	parse_port_synthetique(packet, length-size, source, dest);
 }
 
-/*
- * brief : On affiche que c'est du TCP et on regard les flags
- */
+
 void parse_tcp_synthetique(const u_char* packet, int length)
 {
 	int i;
@@ -386,9 +371,7 @@ void parse_tcp_synthetique(const u_char* packet, int length)
 	parse_port_synthetique(packet, length-size, source, dest);
 }
 
-/*
- * brief : On affiche que c'est de l'IP et on regarde le protocole de transport
- */
+
 void parse_ip_synthetique(const u_char* packet, int length)
 {
 	int i;
@@ -423,9 +406,7 @@ void parse_ip_synthetique(const u_char* packet, int length)
 
 }
 
-/*
- * brief : On affiche que c'est de l'ethernet puis le protcole suivant
- */
+
 void parse_eth_synthetique(const u_char* packet, int length)
 {
 	u_char *ptr;
@@ -467,9 +448,7 @@ void parse_eth_synthetique(const u_char* packet, int length)
 		printf("\tPacket ni IP ni ARP\n");
 }
 
-/*
- * brief : On compte les packets et on lance le décodage
- */
+
 void packet_reader_synthetique(u_char *useless,const struct pcap_pkthdr* pkthdr,const u_char* packet)
 {
 	static int count = 1;

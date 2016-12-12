@@ -1,6 +1,5 @@
 /*
  * auteur : John-Nathan HILL
- * brief : Ce module permet de décoder les trames en -v 2
  */
 
 /*

@@ -52,7 +52,8 @@ void parse_port_concis(short source, short dest)
 }
 
 
-void parse_udp_concis(const u_char *packet){
+void parse_udp_concis(const u_char *packet)
+{
 	struct udphdr *udp_header = (struct udphdr *) packet;
 	short source = ntohs(udp_header->uh_sport);
 	short dest = ntohs(udp_header->uh_dport);
@@ -62,13 +63,14 @@ void parse_udp_concis(const u_char *packet){
 	parse_port_concis(source, dest);
 }
 
-void parse_tcp_concis(const u_char *packet){
+
+void parse_tcp_concis(const u_char *packet)
+{
 	struct tcphdr *tcp_header = (struct tcphdr *) packet;
 	int size = sizeof(struct ip);
 	int offset = (int)tcp_header->th_off;
 	short source = ntohs(tcp_header->th_sport);
 	short dest = ntohs(tcp_header->th_dport);
-	int port = 0;
 
 	printf("TCP {");
 
@@ -91,7 +93,8 @@ void parse_tcp_concis(const u_char *packet){
 }
 
 
-void parse_ip(const u_char *packet){
+void parse_ip_concis(const u_char *packet)
+{
 	int i;
 
 	struct ip *ip_header = (struct ip *) packet;
@@ -122,39 +125,25 @@ void parse_ip(const u_char *packet){
 
 }
 
-void packet_reader_concis(u_char *useless,const struct pcap_pkthdr* pkthdr,const u_char* packet)
+
+void packet_reader_concis(u_char *useless, const struct pcap_pkthdr* pkthdr, const u_char* packet)
 {
 	static int count = 1;
 	printf("[%d]  ",count);
-    /* on lit la taille du packet */
-	fprintf(stdout,"\tlength: %d  ",pkthdr->len);
-
-	u_char *ptr;
+	printf("\tlength: %d  ",pkthdr->len);
 
     int i;
 
-    /* ethernet header */
-    struct ether_header *eptr = (struct ether_header *) packet;
+    struct ether_header *eth_header = (struct ether_header *) packet;
     int size = sizeof(struct ether_header);
-
-	/*ptr = eptr->ether_shost;
-	for(i=0;i<5;i++)
-		printf("%x:",ptr[i]);
-	printf("%x ->  ",ptr[i++]);
-
-	ptr = eptr->ether_dhost;
-	for(i=0;i<5;i++)
-		printf("%x:",ptr[i]);
-	printf("%x  ",ptr[i++]);*/
 
 	for (i=0;i<size;i++)
 		packet++;
 
 
-	switch(ntohs(eptr->ether_type)){
+	switch(ntohs(eth_header->ether_type)){
 		case ETHERTYPE_IP:
-			//printf("IP  ");
-			parse_ip(packet);
+			parse_ip_concis(packet);
 			break;
 		case ETHERTYPE_ARP:
 			printf("ARP  ");
