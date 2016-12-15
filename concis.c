@@ -32,7 +32,6 @@ void parse_port_concis(short source, short dest)
 		case TELNET: printf("TELNET  "); break;
 		case BOOTPS: printf("BOOTP:Serveur  "); break;
 		case BOOTPC: printf("BOOTP:client  "); break;
-		case TELNET: printf("TELNET  "); break;
 
 		default: port++; break;
 	}
@@ -48,7 +47,6 @@ void parse_port_concis(short source, short dest)
 		case TELNET: printf("TELNET  "); break;
 		case BOOTPS: printf("BOOTP:Serveur "); break;
 		case BOOTPC: printf("BOOTP:client "); break;
-		case TELNET: printf("TELNET  "); break;
 
 		default: port++; break;
 	}
